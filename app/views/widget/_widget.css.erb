@@ -1,0 +1,314 @@
+/**
+ *  widget.js.erb
+ *  https://github.com/xmartlabs/javascript-plugin
+ *
+ *  Copyright (c) 2016 Xmartlabs SRL ( http://xmartlabs.com )
+ *
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+/****** GENERIC CLASSES ******/
+*[class^='myapp-widget-'],
+*[class^='myapp-widget-'] * {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: <%= options[:style][:fontColorPrimary] %>;
+  display: block;
+  font-family: <%= options[:style][:fontFamily] %>;
+  font-size: 16px;
+  font-weight: normal;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+  text-decoration: none;
+  float: none;
+
+  -ms-tap-highlight-color: rgba(0,0,0,0);
+  -moz-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  tap-highlight-color: rgba(0,0,0,0);
+}
+
+.myapp-widget-action {
+  background-color: <%= options[:style][:colorPrimary] %>;
+  border: 1px solid <%= options[:style][:colorSecondary] %>;
+  border-radius: <%= options[:style][:borderRadiusBig] %>;
+  color: <%= options[:style][:colorPrimary] %>;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 13px;
+  height: 35px;
+  line-height: 35px;
+  padding: 0px 17px;
+  width: auto;
+}
+
+.myapp-widget-action.myapp-widget-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.myapp-widget-action:hover {
+  background-color: <%= options[:style][:colorPrimary] %> !important;
+  color: <%= options[:style][:colorSecondary] %> !important;
+}
+
+.myapp-widget-action.myapp-widget-disabled:hover {
+  background-color: <%= options[:style][:colorSecondary] %> !important;
+  color: <%= options[:style][:colorPrimary] %> !important;
+}
+
+.myapp-widget-centered {
+  position: relative;
+}
+
+.myapp-widget-centered > :first-child {
+  left: 50%;
+  margin-right: -50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.myapp-widget-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.myapp-widget-hoverable:hover {
+  -moz-box-shadow: inset 0 0 2rem 2rem rgba(255, 255, 255, 0.3);
+  -webkit-box-shadow: inset 0 0 2rem 2rem rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 0 2rem 2rem rgba(255, 255, 255, 0.3);
+}
+
+.myapp-widget-hoverable.myapp-widget-disabled:hover {
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.myapp-widget-left {
+  float: left;
+}
+
+.myapp-widget-right {
+  float: right;
+}
+
+.myapp-widget-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.myapp-widget-unselectable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/****** WIDGET MARKER ******/
+
+.myapp-widget-marker-container {
+  height: 115px;
+  position: fixed;
+  width: 120px;
+}
+
+.myapp-widget-marker-container > :first-child {
+  margin-bottom: 15px;
+  margin-right: 15px;
+}
+
+.myapp-widget-marker {
+  cursor: pointer;
+  float: left;
+  height: 50px;
+  width: 120px;
+}
+
+.myapp-widget-marker .myapp-widget-title {
+  color: <%= options[:style][:markerFontColor] %>;
+  top: 4px;
+  position: relative;
+  left: 10px;
+  padding-right: 10px;
+  font-size: 16px;
+}
+
+/****** WIDGET ******/
+
+.myapp-widget-widget {
+  background-color: <%= options[:style][:overlayBackgroundColor] %>;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  -moz-transition: all 0.5s ease-in-out;
+  -webkit-transition: all 0.5s ease-in-out;
+  transition: all 0.5s ease-in-out;
+}
+
+.myapp-widget-widget .myapp-widget-body {
+  background-color: <%= options[:style][:widgetBackgroundColor] %>;
+  border: <%= options[:style][:widgetBorderWidth] %> solid <%= options[:style][:widgetBorderColor] %>;
+  border-radius: <%= options[:style][:borderRadiusBig] %>;
+  font-size: 13px;
+  height: 280px;
+  position: relative;
+  width: 400px;
+  max-width: 90%;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-body-container {
+  height: 220px;
+  position: relative;
+  top: 60px;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-container {
+  height: 100%;
+  position: relative;
+  text-align: center;
+  width: 100%;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-content {
+  padding: 0 50px;
+  top: 0;
+  transform: translate(-50%, 0);
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-title {
+  font-size: 17px;
+  font-weight: bold;
+  margin: 0 0 20px 0;
+  top: -30px;
+}
+
+.myapp-widget-widget .myapp-widget-container .myapp-widget-action {
+  float: right !important;
+  margin-top: 10px;
+  margin-right: 25px;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-form {
+  margin-top: 20px;
+  padding-top: 25px;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-form .myapp-widget-row {
+  display: inline-block;
+  margin-top: 10px;
+  width: 350px;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-form .myapp-widget-row:nth-of-type(1) {
+  margin-top: 0;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-form input {
+  border: 1px solid <%= options[:style][:fieldBorderColor] %>;
+  border-radius: <%= options[:style][:fieldBorderRadius] %>;
+  color: <%= options[:style][:fontColorPrimary] %>;
+  float: left;
+  font-size: 16px;
+  height: 42px;
+  padding: 0;
+  text-indent: 15px;
+  width: 167px;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-form input:focus {
+  outline: -moz-focus-ring-color auto 5px;
+  outline: -webkit-focus-ring-color auto 5px;
+  outline: focus-ring-color auto 5px;
+  outline-color: <%= options[:style][:fontColorPrimary] %>;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-form input::-webkit-input-placeholder {  
+   color: <%= options[:style][:fontColorSecondary] %>;
+   opacity: 0.6;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-form input:nth-of-type(even) {
+  float: right;
+}
+
+.myapp-widget-widget .myapp-widget-body .myapp-widget-form input[type=submit] {
+  width: 150px;
+  height: 35px;
+  text-indent: 0;
+}
+
+/****** MEDIA QUERIES ******/
+
+@media(max-width: 760px) {
+  .myapp-widget-widget .myapp-widget-body .myapp-widget-container .myapp-widget-content {
+    padding: 0 10px;
+  }
+}
+
+@media(max-width: 600px) {
+  .myapp-widget-action-close {
+    right: 0;
+    top: 0;
+  }
+
+  .myapp-widget-separator {
+    height: 1px;
+    left: 50%;
+    margin-right: -50%;
+    position: absolute;
+    top: 125px;
+    transform: translate(-50%, -50%);
+    width: 80%;
+  }
+
+  .myapp-widget-widget .myapp-widget-body {
+    width: 320px;
+  }
+
+  .myapp-widget-widget .myapp-widget-body .myapp-widget-body-container {
+    height: 360px;
+    top: 30px;
+  }
+
+  .myapp-widget-widget .myapp-widget-body .myapp-widget-container {
+    width: 100%;
+    height: 245px;
+  }
+
+  .myapp-widget-widget .myapp-widget-body .myapp-widget-title {
+    margin: 0 0 10px 0;
+  }
+  
+  .myapp-widget-widget .myapp-widget-body .myapp-widget-description {
+    font-size: 15px;
+  }
+
+  .myapp-widget-widget .myapp-widget-body .myapp-widget-form input {
+    height: 33px;
+  }
+}

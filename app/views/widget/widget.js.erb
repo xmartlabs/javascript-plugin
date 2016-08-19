@@ -1,0 +1,326 @@
+//  widget.js.erb
+//  https://github.com/xmartlabs/javascript-plugin
+//
+//  Copyright (c) 2016 Xmartlabs SRL ( http://xmartlabs.com )
+//
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+(function() {
+
+  var defaults = {
+    clientId: undefined,
+    style: {
+      actionBorderRadius: "<%= options[:style][:actionBorderRadius] %>",
+      colorPrimary: "<%= options[:style][:colorPrimary] %>",
+      colorSecondary: "<%= options[:style][:colorSecondary] %>",
+      fieldBorderColor: "<%= options[:style][:fieldBorderColor] %>",
+      fontColorPrimary: "<%= options[:style][:fontColorPrimary] %>",
+      fontColorSecondary: "<%= options[:style][:fontColorSecondary] %>",
+      fontFamily: "<%= options[:style][:fontFamily] %>",
+      markerBorderRadius: "<%= options[:style][:markerBorderRadius] %>",
+      markerFontColor: "<%= options[:style][:markerFontColor] %>",
+      overlayBackgroundColor: "<%= options[:style][:overlayBackgroundColor] %>",
+      position: "<%= options[:style][:position] %>",
+      widgetBackgroundColor: "<%= options[:style][:widgetBackgroundColor] %>",
+      widgetBorderColor: "<%= options[:style][:widgetBorderColor] %>",
+      widgetBorderWidth: "<%= options[:style][:widgetBorderWidth] %>",
+    }
+  }
+
+  /******* Public Methods *******/
+
+  this.Widget = function() {
+  }
+
+  Widget.prototype.init = function(options, doc) {
+    this.doc = doc || window.document
+    this.options = merge(defaults, options)
+    
+    if (!this.options.clientId) {
+      // Validate options as needed
+      console.error("Undefined `clientId`. You must set it before start using Widget");
+      return
+    }
+
+    loadCss(this.doc, this.options);
+    this.widgetMarker = createWidgetMarker(this.doc, this.options);
+    this.widget = createWidget(this.doc, this.options);
+  }
+
+  /******* Private Methods *******/
+
+  function merge(source, overrides) {
+    var property;
+    for (property in overrides) {
+      if (overrides.hasOwnProperty(property)) {
+        if (overrides[property] instanceof Object) {
+          source[property] = source[property] || new Object();
+          extendDefaults(source[property], overrides[property])
+        } else {
+          source[property] = overrides[property];
+        }
+      }
+    }
+    return source;
+  }
+
+  function me() {
+    // `MyAppWidget` is defined in the client script tag
+    return window[window['MyAppWidget']];
+  }
+
+  function loadCss(doc, options) {
+    // Instead of setting the `href` property of the style element, just add the parse CSS file 
+    // content as its `innerHTML`
+    var css = me().doc.createElement('style');
+    // As an example, we are passing an additionally option arguments in order to make some
+    // modifications to the CSS template file.
+    css.innerHTML = "<%=j render('widget/widget.css', options: options) %>";
+    me().doc.getElementsByTagName('head')[0].appendChild(css);
+  }
+
+  function createWidgetMarker(doc, options) {
+    var widgetMarker = doc.createElement('div');
+    widgetMarker.className = 'myapp-widget-marker myapp-widget-hoverable myapp-widget-unselectable';
+    widgetMarker.innerHTML = '<div class="myapp-widget-title">Schedule your cute</div>';
+    widgetMarker.onclick = toggleWidgetCollapsed;
+    
+    customizeMarker(widgetMarker, options);
+
+    doc.getElementsByTagName('body')[0].appendChild(widgetMarker);
+
+    return widgetMarker;
+  }
+
+  function createWidget(doc, options) {
+    var widget = doc.createElement('div');
+    widget.className = 'myapp-widget-widget myapp-widget-centered myapp-widget-hidden';
+    widget.isCollapsed = true;
+    widget.onclick = hideWidget;
+    widget.onscroll = function(ev) {  ev.stopPropagation(); }
+    widget.ontouchmove = function(ev) {
+      event.preventDefault();
+      e.preventDefault();
+    }
+
+    var body = doc.createElement('div');
+    body.className = 'myapp-widget-body';
+    body.onclick = function(evt) { evt.stopPropagation(); }
+    customizeWidgetBody(body, options);
+
+    widget.appendChild(body);
+
+    var bodyContent = doc.createElement('div');
+    bodyContent.className = 'myapp-widget-body-container';
+    body.appendChild(bodyContent);
+
+    bodyContent.appendChild(createScheduleForm(doc, options));
+
+    doc.getElementsByTagName('body')[0].appendChild(widget);
+
+    return widget;
+  }
+
+  function createScheduleForm(doc, options) {
+    var page = doc.createElement('div');
+    page.className = 'myapp-widget-container myapp-widget-centered';
+    page.innerHTML = 
+        '<div class="myapp-widget-title">Schedule your hair cute</div>' +
+        '<div class="myapp-widget-form">' +
+          '<div class="myapp-widget-row">' +
+            '<input id="myapp-widget-first-name" type="text" placeholder="First Name" />' +
+            '<input id="myapp-widget-last-name" type="text" placeholder="Last Name" />' +
+          '</div>' +
+          '<div class="myapp-widget-row">' +
+            '<input id="myapp-widget-email" type="email" placeholder="Email"/>' +
+            '<input id="myapp-widget-date" type="date" />' +
+          '</div>' +
+          '<div id="myapp-widget-subscribe-action" class="myapp-widget-action myapp-widget-disabled myapp-widget-unselectable">Schedule</div>' +
+        '</div>';
+
+    var inputs = page.getElementsByTagName('input');
+    for (var ind = 0; inputs[ind] != undefined; ind++) {
+      customizeInput(inputs[ind]);
+      inputs[ind].onkeyup = inputValueChanged;
+      inputs[ind].onchange = inputValueChanged;
+    }
+
+    var action = page.getElementsByClassName('myapp-widget-action')[0];
+    action.disabled = 'disabled';
+    action.onclick = scheduleButtonClicked;
+    customizeAction(action);
+
+    return page;
+  }
+
+  function toggleWidgetCollapsed() {
+    var widget = me().widget;
+    widget.isCollapsed ? showWidget() : hideWidget();
+  }
+
+  function hideWidget() {
+    var widget = me().widget;
+    widget.className = 'myapp-widget-widget myapp-widget-centered myapp-widget-hidden';
+    widget.isCollapsed = true;
+    clearWidgetForm();
+  }
+
+  function showWidget() {
+    var widget = me().widget;
+    widget.className = 'myapp-widget-widget myapp-widget-centered myapp-widget-visible';
+    widget.isCollapsed = false;
+  }
+
+  function inputValueChanged() {
+    var action = me().doc.getElementById('myapp-widget-subscribe-action');
+    if (isEmptyString(email()) || !isValidEmail(email()) || isEmptyString(firstName()) || isEmptyString(lastName()) || isEmptyString(scheduleDate())) {
+      action.className = 'myapp-widget-action myapp-widget-disabled myapp-widget-unselectable';
+      action.disabled = 'disabled';
+    } else {
+      action.className = 'myapp-widget-action myapp-widget-unselectable';
+      action.disabled = undefined;
+    }
+  }
+
+  function email() {
+    return (me().doc.getElementById('myapp-widget-email').value || "").trim();
+  }
+
+  function firstName() {
+    return (me().doc.getElementById('myapp-widget-first-name').value || "").trim();
+  }
+
+  function lastName() {
+    return (me().doc.getElementById('myapp-widget-last-name').value || "").trim();
+  }
+
+  function scheduleDate() {
+    return (me().doc.getElementById('myapp-widget-date').value || "").trim();
+  }
+
+  function isEmptyString(string) {
+    return !string || string.length == 0;
+  }
+
+  function isValidEmail(email) {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+  }
+
+  function scheduleButtonClicked() {
+    var action = this
+    if (action.disabled === 'disabled') {
+      return
+    }
+
+    action.className = 'myapp-widget-action myapp-widget-disabled myapp-widget-unselectable';
+    action.disabled = 'disabled';
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "<%= base_url %>/customer/subscribe", true);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.onreadystatechange = function() {
+      if (xhttp.readyState != 4) {
+        return
+      }
+
+      action.className = 'myapp-widget-action myapp-widget-unselectable';
+      action.disabled = undefined;
+
+      var responseText = xhttp.responseText;
+      try {
+        var response = JSON.parse(responseText);
+        if (xhttp.status >= 200 && xhttp.status < 300) {
+          hideWidget();
+        } else {
+          var msg = response.error.message
+          alert("Oops! Something went wrong. " + response.error.message);
+        }
+      } catch (error) {
+        alert("Oops! Something went wrong, please try again later.");
+        console.error(error)
+      }
+    };
+
+    var params = {
+      'client_id': me().options.clientId,
+      'schedule': {
+        'date': scheduleDate(),
+        'email': email(),
+        'first_name': firstName(),
+        'last_name': lastName()
+      }
+    };
+    xhttp.send(JSON.stringify(params));    
+  }
+  
+  // change marker style properties according to the options passed
+  function customizeMarker(marker, options) { 
+    marker.style.position = "fixed";
+    marker.style.top = "10px";
+    if (options.style.position == 'left') {
+      marker.style.borderRadius = '0 ' + options.style.markerBorderRadius + ' ' + options.style.markerBorderRadius + ' 0';
+      marker.style.left = "0px";
+      marker.style.marginRight = '0';
+    } else if (options.style.position == 'right') {
+      marker.style.borderRadius = '' + options.style.markerBorderRadius + ' 0 0 ' + options.style.markerBorderRadius;
+      marker.style.marginRight = '0';
+      marker.style.right = "0px";
+    } else if (options.style.position == 'bottom') {
+      marker.style.bottom = "0px";
+      marker.style.borderRadius = options.style.markerBorderRadius + ' ' + options.style.markerBorderRadius + ' 0 0';
+      marker.style.marginBottom = '0';
+    }
+
+    marker.style.backgroundColor = options.style.colorPrimary;
+    marker.style.color = options.style.markerFontColor;
+    marker.style.fontFamily = options.style.fontFamily;
+  }
+
+  // change widget body style properties according to the options passed
+  function customizeWidgetBody(body, options) { 
+    body.style.backgroundColor = me().options.style.colorSecondary;
+    body.style.borderColor = me().options.style.colorPrimary;
+    body.style.borderRadius = me().options.style.actionBorderRadius;
+  }
+
+  // change input style properties according to the options passed
+  function customizeInput(input, options) { 
+    input.style.borderColor = me().options.style.fieldBorderColor;
+    input.style.borderRadius = me().options.style.fieldBorderRadius;
+    input.style.color = me().options.style.fontColorPrimary;
+    input.style.fontFamily = me().options.style.fontFamily;
+  }
+
+  // change action style properties according to the options passed
+  function customizeAction(action, options) { 
+    action.style.backgroundColor = me().options.style.colorSecondary;
+    action.style.borderColor = me().options.style.colorPrimary;
+    action.style.borderRadius = me().options.style.actionBorderRadius;
+  }
+
+  // clear form input values
+  function clearWidgetForm() {
+    me().doc.getElementById('myapp-widget-date').value = '';
+    me().doc.getElementById('myapp-widget-email').value = '';
+    me().doc.getElementById('myapp-widget-first-name').value = '';
+    me().doc.getElementById('myapp-widget-last-name').value = '';
+  }
+}());
