@@ -1,5 +1,5 @@
 # javascript-plugin
-This is the source code example for the blog [Making a JS widget: a full-stack approach]()
+This is the source code example for the blog [Making a JS widget: a full-stack approach](https://blog.xmartlabs.com/2016/08/21/making-a-js-widget-a-full-stack-approach/)
 
 # Content
 
@@ -9,16 +9,17 @@ This repo contains a [Ruby on Rails](http://rubyonrails.org/) 5.0 project with a
 The plugin source code. Which is composed of two files:
 
 * An ERB template that is used to generate the javascript code [widget.js.erb](https://github.com/xmartlabs/javascript-plugin/blob/master/app/views/widget/widget.js.erb)
-* Other ERB template that is used to generate the CSS code [_widget.css.erb](https://github.com/xmartlabs/javascript-plugin/blob/master/app/views/widget/_widget.css.erb)
-* An example web page that shows how the plugin can be loaded.
+* Another ERB template that is used to generate the CSS code [_widget.css.erb](https://github.com/xmartlabs/javascript-plugin/blob/master/app/views/widget/_widget.css.erb)
+
+And you can see an example web page that shows how the plugin is loaded here: [index.html](https://github.com/xmartlabs/javascript-plugin/blob/master/public/index.html).
 
 ## Rails backend
 
 A rails backend that serves the plugin javascript and a simple endpoint which is called from the plugin simulating the service provided to the client web pages.
 
-Additionally, the backend uses [rack-cors]() to allow cross domain calls. This is needed in order to allow a client web page call our service from the plguin javascript.
+Additionally, the backend uses [rack-cors](https://github.com/cyu/rack-cors) to allow cross domain calls. This is needed in order to allow a client web page call our service from the plugin javascript.
 
-A security layer was added by using [rack-attack]()
+A security layer was added by using [rack-attack](https://github.com/kickstarter/rack-attack)
 
 # Usage
 
@@ -30,7 +31,7 @@ A security layer was added by using [rack-attack]()
 
 ## Running the server
 
-First ensure you have installed all the requirements listed in the previous section.
+First, ensure you have installed all the requirements listed in the previous section.
 Then, run the following commands
 
 ```shell
